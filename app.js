@@ -19,13 +19,13 @@ x.listen(function(err) {
 
 		// Subscribing so we'll get notified every now and then
 
-		console.log('Successfully subscribed, with subscription id', sid, '\n\n');
+		console.log('Successfully subscribed, with subscription id', sid, '\n');
 	});
 
 	x.on('serviceEvent', function(endpoint, sid, data) {
 		//console.log('Received event from', endpoint, '(' + sid + ') with data:', data, '\n\n');
 
-		console.log('Received event from', endpoint, '(' + sid + ')\n\n');
+		console.log('Received event from', endpoint, '(' + sid + ')\n');
 
 		// Ooh, we got a notification! Let's poke inside…
 
@@ -70,16 +70,26 @@ function checkForNewTrack(currentlyPlaying) {
 		lastPlaying.title = currentlyPlaying.title;
 		lastPlaying.artist = currentlyPlaying.artist;
 		lastPlaying.album = currentlyPlaying.album;
-		lastPlaying.albumArtURI = currentlyPlaying.albumArtURI; 
+		lastPlaying.albumArtURI = currentlyPlaying.albumArtURI;
 
 	} else {
 
 	// …else, we check if it's the same song - no need to anything in that case.
 
-		if (lastPlaying.title != currentlyPlaying.title &&
+		if ((lastPlaying.title != currentlyPlaying.title &&
 		lastPlaying.artist != currentlyPlaying.artist &&
 		lastPlaying.album != currentlyPlaying.album &&
-		lastPlaying.albumArtURI != currentlyPlaying.albumArtURI) {
+		lastPlaying.albumArtURI != currentlyPlaying.albumArtURI
+		) || (
+		currentlyPlaying.title != 'null' &&
+		currentlyPlaying.artist != 'null' &&
+		currentlyPlaying.album != 'null' &&
+		currentlyPlaying.albumArtURI != 'null'
+		) || (
+		currentlyPlaying.title != null &&
+		currentlyPlaying.artist != null &&
+		currentlyPlaying.album != null &&
+		currentlyPlaying.albumArtURI != null)) {
 
 			// If it isn't, we update the lastPlaying object!
 
@@ -93,6 +103,8 @@ function checkForNewTrack(currentlyPlaying) {
 			sendToSlack(lastPlaying);
 
 		}
+
+		console.log('No track change.\n');
 
 	}
 
@@ -117,6 +129,9 @@ function sendToSlack(trackMetadata) {
 		if (error) {
 			return next(error);
 		}
+
+		console.log('Sent "' + payload.text + '" to Slack!\n');
+
 	});
 
 }
