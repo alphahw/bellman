@@ -26,7 +26,7 @@ x.listen(function(err) {
 	x.on('serviceEvent', function(endpoint, sid, data) {
 		//console.log('Received event from', endpoint, '(' + sid + ') with data:', data, '\n\n');
 
-		console.log('Received event from', endpoint, '(' + sid + ')\n');
+		console.log('– – – – – – – – – – – – – – – – – – – – – –\nReceived event from', endpoint, '(' + sid + ')\n');
 
 		// Ooh, we got a notification! Let's poke inside…
 
@@ -37,7 +37,7 @@ x.listen(function(err) {
 
 			var annoyingJSONPathToMetaData = result.Event.InstanceID[0].CurrentTrackMetaData[0].$.val;
 
-			console.log('Parsed JSON still in form of DIDL: ' + annoyingJSONPathToMetaData);
+			console.log('Parsed JSON still in form of DIDL: ' + annoyingJSONPathToMetaData + '\n');
 
 			if (lastCurrentTrackMetaData != annoyingJSONPathToMetaData) {
 
@@ -89,7 +89,7 @@ function checkForNewTrack(currentlyPlaying) {
 		lastPlaying.album = currentlyPlaying.album;
 		lastPlaying.albumArtURI = currentlyPlaying.albumArtURI;
 
-		console.log('Filled out null lastPlaying fields.');
+		console.log('Filled out null lastPlaying fields.\n');
 
 		// And send the whole thing to Slack!
 
