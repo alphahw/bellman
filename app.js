@@ -4,7 +4,8 @@ var request = require('request'),
 	xml2js = require('xml2js'),
 	util = require('util');
 
-var lastPlaying = {};
+var lastCurrentTrackMetaData = null,
+	lastPlaying = {};
 
 // Let's listen to the sounds… err, UPnP notifications… of the SONOS.
 
@@ -32,22 +33,38 @@ x.listen(function(err) {
 		xml2js.parseString(data.LastChange, function(err, result) {
 			//console.log(util.inspect(result, false, null));
 
-			// First xml2js(ON) pass – however, the CurrentTrackMetaData val is still XML (well, DIDL), so we have to run that through the parser…
+			// First xml2js(ON) pass – however, the CurrentTrackMetaData val is still XML (well, DIDL), so we have to run that through the parser, if there's a new track playing
 
 			var annoyingJSONPathToMetaData = result.Event.InstanceID[0].CurrentTrackMetaData[0].$.val;
 
-			xml2js.parseString(annoyingJSONPathToMetaData, function(err, result) {
-				//console.log(util.inspect(result, false, null));
+			console.log('Parsed JSON still in form of DIDL: ' + annoyingJSONPathToMetaData);
 
-				// Second xml2js(ON) pass – now we can grab the nice stuff inside! See DIDL parser below.
+			if (lastCurrentTrackMetaData != annoyingJSONPathToMetaData) {
 
-				var currentTrackMetaData = parseDIDL(result);
+				// Did the current track change? If so, parse the data and pull out goodies
 
-				//console.log(util.inspect(currentTrackMetaData, false, null));
+				lastCurrentTrackMetaData = annoyingJSONPathToMetaData;
 
-				checkForNewTrack(currentTrackMetaData);
+				xml2js.parseString(annoyingJSONPathToMetaData, function(err, result) {
+					//console.log(util.inspect(result, false, null));
 
-			});
+					// Second xml2js(ON) pass – now we can grab the nice stuff inside! See DIDL parser below.
+
+					var currentTrackMetaData = parseDIDL(result);
+
+					//console.log(util.inspect(currentTrackMetaData, false, null));
+
+					checkForNewTrack(currentTrackMetaData);
+
+				});
+
+			} else {
+
+				// No change? Do nothing, except log it.
+
+				console.log('No track change. (Unparsed DIDL level detection. Shallow!)\n');
+
+			}
 
 		});
 
@@ -101,7 +118,7 @@ function checkForNewTrack(currentlyPlaying) {
 
 		} else {
 
-			console.log('No track change.\n');
+			console.log('No track change. (Parsed JSON level detection. Deep!)\n');
 
 		}
 
