@@ -76,20 +76,11 @@ function checkForNewTrack(currentlyPlaying) {
 
 	// …else, we check if it's the same song - no need to anything in that case.
 
-		if ((lastPlaying.title != currentlyPlaying.title &&
-		lastPlaying.artist != currentlyPlaying.artist &&
-		lastPlaying.album != currentlyPlaying.album &&
-		lastPlaying.albumArtURI != currentlyPlaying.albumArtURI
-		) || (
-		currentlyPlaying.title != 'null' &&
-		currentlyPlaying.artist != 'null' &&
-		currentlyPlaying.album != 'null' &&
-		currentlyPlaying.albumArtURI != 'null'
-		) || (
-		currentlyPlaying.title != null &&
-		currentlyPlaying.artist != null &&
-		currentlyPlaying.album != null &&
-		currentlyPlaying.albumArtURI != null)) {
+		if ((lastPlaying.title != currentlyPlaying.title) || (
+			currentlyPlaying.title != null &&
+			currentlyPlaying.artist != null) || (
+			currentlyPlaying.title != 'null' &&
+			currentlyPlaying.artist != 'null')) {
 
 			// If it isn't, we update the lastPlaying object!
 
@@ -130,7 +121,7 @@ function sendToSlack(trackMetadata) {
 			return next(error);
 		}
 
-		console.log('Sent "' + payload.text + '" to Slack!\n');
+		console.log('Successfully sent "' + payload.text + '" to Slack.\n');
 
 	});
 
