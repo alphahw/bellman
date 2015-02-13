@@ -4,6 +4,10 @@ var request = require('request'),
 	xml2js = require('xml2js'),
 	util = require('util');
 
+var lastPlaying = {};
+
+// Let's listen to the sounds… err, UPnP notifications… of the SONOS.
+
 var x = new Listener(new Sonos(process.env.SONOS_HOST || '192.168.0.0'));
 
 x.listen(function(err) {
@@ -33,13 +37,15 @@ x.listen(function(err) {
 			var annoyingJSONPathToMetaData = result.Event.InstanceID[0].CurrentTrackMetaData[0].$.val;
 
 			xml2js.parseString(annoyingJSONPathToMetaData, function(err, result) {
-			//console.log(util.inspect(result, false, null));
+				//console.log(util.inspect(result, false, null));
 
 				// Second xml2js(ON) pass – now we can grab the nice stuff inside! See DIDL parser below.
 
 				var currentTrackMetaData = parseDIDL(result);
 
-				console.log(currentTrackMetaData);
+				//console.log(util.inspect(currentTrackMetaData, false, null));
+
+				checkForNewTrack(currentTrackMetaData);
 
 			});
 
@@ -48,8 +54,75 @@ x.listen(function(err) {
 	});
 });
 
+// Verify there's a new track playing
+
+function checkForNewTrack(currentlyPlaying) {
+
+	// If there's nothing in the lastPlaying object, we fill it out…
+
+	if (lastPlaying.title == null &&
+		lastPlaying.artist == null &&
+		lastPlaying.album == null &&
+		lastPlaying.albumArtURI == null) {
+
+		// Yes, not the easiest way to do this – but we're set in case the keys should ever change (needs to be done to the DIDL parser too though)
+
+		lastPlaying.title = currentlyPlaying.title;
+		lastPlaying.artist = currentlyPlaying.artist;
+		lastPlaying.album = currentlyPlaying.album;
+		lastPlaying.albumArtURI = currentlyPlaying.albumArtURI; 
+
+	} else {
+
+	// …else, we check if it's the same song - no need to anything in that case.
+
+		if (lastPlaying.title != currentlyPlaying.title &&
+		lastPlaying.artist != currentlyPlaying.artist &&
+		lastPlaying.album != currentlyPlaying.album &&
+		lastPlaying.albumArtURI != currentlyPlaying.albumArtURI) {
+
+			// If it isn't, we update the lastPlaying object!
+
+			lastPlaying.title = currentlyPlaying.title;
+			lastPlaying.artist = currentlyPlaying.artist;
+			lastPlaying.album = currentlyPlaying.album;
+			lastPlaying.albumArtURI = currentlyPlaying.albumArtURI;
+
+			// And send the whole thing to Slack!
+
+			sendToSlack(lastPlaying);
+
+		}
+
+	}
+
+}
+
+// Posting the result to Slack
+
+function sendToSlack(trackMetadata) {
+
+	var artistAndTitle = '*' + trackMetadata.artist + ' – ' + trackMetadata.title + '*';
+	var album = '_' + trackMetadata.album + '_';
+
+	var payload = {
+		text: artistAndTitle + '\n' + album
+	};
+
+	request({
+		uri: process.env.SLACK_WEBHOOK,
+		method: 'POST',
+		body: JSON.stringify(payload)
+	}, function (error, response, body) {
+		if (error) {
+			return next(error);
+		}
+	});
+
+}
+
 // Taken from the innards of the sonos package – couldn't get to it, so here we are.
-var parseDIDL = function(didl) {
+function parseDIDL(didl) {
   var item;
 
   if ((!didl) || (!didl['DIDL-Lite']) || (!util.isArray(didl['DIDL-Lite'].item)) || (!didl['DIDL-Lite'].item[0])) return {};
