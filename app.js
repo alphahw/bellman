@@ -72,6 +72,12 @@ function checkForNewTrack(currentlyPlaying) {
 		lastPlaying.album = currentlyPlaying.album;
 		lastPlaying.albumArtURI = currentlyPlaying.albumArtURI;
 
+		console.log('Filled out null lastPlaying fields.');
+
+		// And send the whole thing to Slack!
+
+		sendToSlack(lastPlaying);
+
 	} else {
 
 	// …else, we check if it's the same song - no need to anything in that case.
@@ -93,9 +99,11 @@ function checkForNewTrack(currentlyPlaying) {
 
 			sendToSlack(lastPlaying);
 
-		}
+		} else {
 
-		console.log('No track change.\n');
+			console.log('No track change.\n');
+
+		}
 
 	}
 
@@ -108,9 +116,13 @@ function sendToSlack(trackMetadata) {
 	var artistAndTitle = '*' + trackMetadata.artist + ' – ' + trackMetadata.title + '*';
 	var album = '_' + trackMetadata.album + '_';
 
-	var payload = {
-		text: artistAndTitle + '\n' + album
-	};
+	var payload = {};
+
+	if (trackMetadata.album != null && trackMetadata.album != 'null') {
+		payload.text = artistAndTitle + '\n' + album;
+	} else {
+		payload.text = artistAndTitle;
+	}
 
 	request({
 		uri: process.env.SLACK_WEBHOOK,
