@@ -150,7 +150,7 @@ function sendToSlack(trackMetadata) {
 			return next(error);
 		}
 
-		console.log('Successfully sent "' + payload.text + '" to Slack.\n');
+		console.log('[' + new Date() + '] Successfully sent "' + payload.text + '" to Slack.\n');
 
 	});
 
