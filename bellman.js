@@ -25,11 +25,8 @@ function Bellman(options = {}) {
 util.inherits(Bellman, EventEmitter);
 
 Bellman.prototype.updateConfig = function(updatedConfig) {
-  config = {
-    ...config,
-    ...updatedConfig
-  }
-}
+  config = Object.assign(config, updatedConfig);
+};
 
 // Let's listen to the sounds… err, UPnP notifications, of the SONOS.
 
