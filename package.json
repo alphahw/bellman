@@ -1,8 +1,8 @@
 {
   "name": "bellman",
   "version": "1.0.0",
-  "description": "SONOS plug-in for Slack",
-  "main": "app.js",
+  "description": "SONOS plug-in for publishing to Slack or emitting an event",
+  "main": "bellman.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
