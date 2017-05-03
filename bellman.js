@@ -52,7 +52,7 @@ Bellman.prototype.listen = function() {
     soundMachine.on('serviceEvent', function(endpoint, sid, data) {
       //console.log('Received event from', endpoint, '(' + sid + ') with data:', data, '\n\n');
 
-      console.log('– – – – – – – – – – – – – – – – – – – – – –\n[' + new Date() + '] Received event from', endpoint, '(' + sid + ')\n');
+      console.log('– – – – – – – – – – – – – – – – – – – – – –\n\n[' + new Date() + '] Received event from', endpoint, '(' + sid + ')\n');
 
       // Ooh, we got a notification! Let's poke inside…
 
@@ -95,7 +95,7 @@ Bellman.prototype.listen = function() {
           // console.log(util.inspect(result, false, null));
 
           if (error) {
-            throw "[" + new Date() + "] Bellman couldn't convert xml2js of current track metadata:\n" + error;
+            throw "[" + new Date() + "] Bellman couldn't convert xml2js of current track metadata:\n" + error + "\n";
           }
 
           // Second xml2js(ON) pass – now we can grab the nice stuff inside! See DIDL parser below.
@@ -141,7 +141,7 @@ Bellman.prototype.checkForNewTrack = function(currentlyPlaying) {
 
     console.log('Filled out null lastPlaying fields.\n');
 
-    console.log(lastPlaying);
+    console.log(lastPlaying + "\n");
 
     // And send the whole thing to Slack!
 
@@ -212,7 +212,7 @@ Bellman.prototype.sendToSlack = function(trackMetadata) {
     body: JSON.stringify(payload)
   }, function (error, response, body) {
     if (error) {
-      throw "[" + new Date() + "] Bellman couldn't post to Slack:\n" + error;
+      throw "[" + new Date() + "] Bellman couldn't post to Slack:\n" + error + "\n";
     }
 
     console.log('Successfully sent "' + payload.text + '" to Slack.\n');
