@@ -141,7 +141,7 @@ Bellman.prototype.checkForNewTrack = function(currentlyPlaying) {
 
     console.log('Filled out null lastPlaying fields.\n');
 
-    console.log(lastPlaying + "\n");
+    console.log(JSON.stringify(lastPlaying) + "\n");
 
     // And send the whole thing to Slack!
 
