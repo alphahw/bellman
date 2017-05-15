@@ -7,7 +7,10 @@ var request = require('request'),
 
 var config = {},
   lastCurrentTrackMetaData = null,
-  lastPlaying = {};
+  lastPlaying = {},
+  sonosInstance = null,
+  soundMachine = null,
+  subscriptionId = null;
 
 var origConsoleLog = console.log;
 console.log = function log() {
@@ -31,8 +34,18 @@ Bellman.prototype.updateConfig = function(updatedConfig) {
 // Let's listen to the sounds… err, UPnP notifications, of the SONOS.
 
 Bellman.prototype.listen = function() {
-  
-  var soundMachine = new Listener(new Sonos(config.SONOS_HOST));
+
+  // If already set up, clean house
+  if (sonosInstance && soundMachine && subscriptionId) {
+    soundMachine.removeService(subscriptionId, function() {
+      sonosInstance = null;
+      soundMachine = null;
+      subscriptionId = null;
+    });
+  }
+
+  sonosInstance = new Sonos(config.SONOS_HOST);
+  soundMachine = new Listener(sonosInstance);
   var _this = this;
 
     soundMachine.listen(function(err) { 
@@ -43,6 +56,7 @@ Bellman.prototype.listen = function() {
 
     soundMachine.addService('/MediaRenderer/AVTransport/Event', function(error, sid) {
       if (error) throw err;
+      subscriptionId = sid;
 
       // Subscribing so we'll get notified every now and then
 
