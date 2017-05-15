@@ -6,6 +6,7 @@ var request = require('request'),
   util = require('util');
 
 var config = {},
+  lastTransportState = null,
   lastCurrentTrackMetaData = null,
   lastPlaying = {},
   sonosInstance = null,
@@ -77,6 +78,8 @@ Bellman.prototype.listen = function() {
           throw "[" + new Date() + "] Bellman couldn't convert xml2js:\n" + error;
         }
 
+        var newTransportState = result.Event.InstanceID[0].TransportState[0].$.val;
+
         // First xml2js(ON) pass – however, the CurrentTrackMetaData val is still XML (well, DIDL), so we have to run that through the parser, if there's a new track playing
 
         var annoyingJSONPathToMetaData = result.Event.InstanceID[0].CurrentTrackMetaData[0].$.val;
@@ -88,7 +91,26 @@ Bellman.prototype.listen = function() {
           // Did the current track change? If so, parse the data and pull out goodies
 
           lastCurrentTrackMetaData = annoyingJSONPathToMetaData;
+        } else if (lastTransportState != newTransportState) {
 
+          // Transport state changed – playing/paused/stopped etc.
+
+          lastCurrentTrackMetaData = annoyingJSONPathToMetaData;
+
+          if (newTransportState == 'PAUSED_PLAYBACK' ||
+              newTransportState == 'STOPPED') {
+            // If paused/stopped, reset lastPlaying and send empty track
+            lastPlaying = {};
+            lastCurrentTrackMetaData = null;
+            _this.onNewTrack({
+              title: '',
+              artist: '',
+              album: '',
+              albumArtURI: ''
+            });
+          }
+
+          lastTransportState = newTransportState;
         } else {
 
           // No change? Do nothing, except log it.
@@ -206,6 +228,10 @@ Bellman.prototype.onNewTrack = function(newTrackMetadata) {
 Bellman.prototype.sendToSlack = function(trackMetadata) {
 
   var payload = {};
+
+  if ((trackMetadata.album == null || trackMetadata.album == 'null' || trackMetadata.album == '') &&
+      (trackMetadata.artist == null || trackMetadata.artist == 'null' || trackMetadata.artist == '') &&
+      (trackMetadata.title == null || trackMetadata.title == 'null' || trackMetadata.title == '')) return;
 
   if (trackMetadata.album != null && trackMetadata.album != 'null') {
     // Formatting for bold artist/title line, and italic album line (Slack markdown)
