@@ -78,7 +78,9 @@ Bellman.prototype.listen = function() {
           throw "[" + new Date() + "] Bellman couldn't convert xml2js:\n" + error;
         }
 
-        var newTransportState = result.Event.InstanceID[0].TransportState[0].$.val;
+        var newTransportState = result.Event.InstanceID[0].TransportState ?
+          result.Event.InstanceID[0].TransportState[0].$.val :
+          null;
 
         // First xml2js(ON) pass – however, the CurrentTrackMetaData val is still XML (well, DIDL), so we have to run that through the parser, if there's a new track playing
 
