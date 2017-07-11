@@ -136,9 +136,9 @@ Bellman.prototype.listen = function() {
             throw "[" + new Date() + "] Bellman couldn't convert xml2js of current track metadata:\n" + error + "\n";
           }
 
-          // Second xml2js(ON) pass – now we can grab the nice stuff inside! See DIDL parser below.
+          // Second xml2js(ON) pass – now we can grab the nice stuff inside!
 
-          currentTrackMetaData = _this.parseDIDL(result);
+          currentTrackMetaData = sonosInstance.parseDIDL(result);
 
           //console.log(util.inspect(currentTrackMetaData, false, null));
 
@@ -263,18 +263,44 @@ Bellman.prototype.sendToSlack = function(trackMetadata) {
 
 }
 
-// Taken from the innards of the sonos package – didn't figure out how to get to it, so here we are for now.
-Bellman.prototype.parseDIDL = function(didl) {
-  var item;
+// Play/Pause/Stop/Next/Prev/Mute
 
-  if ((!didl) || (!didl['DIDL-Lite']) || (!util.isArray(didl['DIDL-Lite'].item)) || (!didl['DIDL-Lite'].item[0])) return {};
-  item = didl['DIDL-Lite'].item[0];
-  return {
-    title: util.isArray(item['dc:title']) ? item['dc:title'][0]: null,
-    artist: util.isArray(item['dc:creator']) ? item['dc:creator'][0]: null,
-    album: util.isArray(item['upnp:album']) ? item['upnp:album'][0]: null,
-    albumArtURI : util.isArray(item['upnp:albumArtURI']) ? item['upnp:albumArtURI'][0] : null
-  };
-};
+Bellman.prototype.play = function(cb) {
+  if (sonosInstance) {
+    sonosInstance.play(cb);
+  }
+}
+
+Bellman.prototype.pause = function(cb) {
+  if (sonosInstance) {
+    sonosInstance.pause(cb);
+  }
+}
+
+Bellman.prototype.stop = function(cb) {
+  if (sonosInstance) {
+    sonosInstance.stop(cb);
+  }
+}
+
+Bellman.prototype.next = function(cb) {
+  if (sonosInstance) {
+    sonosInstance.next(cb);
+  }
+}
+
+Bellman.prototype.prev = function(cb) {
+  if (sonosInstance) {
+    sonosInstance.previous(cb);
+  }
+}
+
+Bellman.prototype.mute = function(cb) {
+  if (sonosInstance) {
+    sonosInstance.getMuted(function(muted) {
+      sonosInstance.setMuted(!muted, cb);
+    });
+  }
+}
 
 module.exports = Bellman;
