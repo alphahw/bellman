@@ -297,7 +297,8 @@ Bellman.prototype.prev = function(cb) {
 
 Bellman.prototype.mute = function(cb) {
   if (sonosInstance) {
-    sonosInstance.getMuted(function(muted) {
+    sonosInstance.getMuted(function(err, muted) {
+      if (err) cb(err, muted);
       sonosInstance.setMuted(!muted, cb);
     });
   }
